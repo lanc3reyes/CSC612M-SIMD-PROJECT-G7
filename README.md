@@ -1,6 +1,6 @@
 # CSC612M SIMD Programming Project
-## Euclidean Norm Kernels in C, x86-64 Assembly, and AVX2 (XMM and YMM)
-**Group 7**
+### Euclidean Norm Kernels in C, x86-64 Assembly, and AVX2 (XMM and YMM)
+### Group 7
 
 ## 1. Introduction
 
