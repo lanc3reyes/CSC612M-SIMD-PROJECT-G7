@@ -1,0 +1,14 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "csc612m-.6900b986\\x64\\Debug\\euclidean_norm_ymm.obj",
+            "outputs": [
+                "csc612m-.6900b986\\x64\\Debug\\euclidean_norm_ymm.cpp.obj.dt.module.json",
+                "csc612m-.6900b986\\x64\\Debug\\euclidean_norm_ymm.cpp.obj.dt.d.json"
+            ],
+            "requires": []
+        }
+    ]
+}

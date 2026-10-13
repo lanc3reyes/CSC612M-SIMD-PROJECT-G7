@@ -1,0 +1,6 @@
+^C:\CSC612M-SIMD-PROJECT-G7\EUCLIDEAN_NORM_YMM.ASM
+c:\nasm\nasm -f win64 euclidean_norm_ymm.asm
+^C:\CSC612M-SIMD-PROJECT-G7\EUCLIDEAN_NORM.ASM
+c:\nasm\nasm -f win64 euclidean_norm.asm
+^C:\CSC612M-SIMD-PROJECT-G7\EUCLIDEAN_NORM_XMM.ASM
+c:\nasm\nasm -f win64 euclidean_norm_xmm.asm
