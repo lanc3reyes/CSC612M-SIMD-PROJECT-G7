@@ -139,12 +139,16 @@
       <EnableSegmentHeap>true</EnableSegmentHeap>
     </Manifest>
   </ItemDefinitionGroup>
+  <PropertyGroup Label="NASM">
+    <NasmExe Condition="'$(NasmExe)'=='' And Exists('C:\nasm\nasm.exe')">C:\nasm\nasm.exe</NasmExe>
+    <NasmExe Condition="'$(NasmExe)'==''">nasm</NasmExe>
+  </PropertyGroup>
   <ItemGroup>
     <CustomBuild Include="euclidean_norm_ymm.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">c:\nasm\nasm -f win64 euclidean_norm_ymm.asm</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(NasmExe)" -f win64 euclidean_norm_ymm.asm</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">euclidean_norm_ymm.obj</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">nasm -f win64 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(NasmExe)" -f win64 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename).obj</Outputs>
     </CustomBuild>
     <ClCompile Include="main.c" />
@@ -152,18 +156,18 @@
   <ItemGroup>
     <CustomBuild Include="euclidean_norm.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">c:\nasm\nasm -f win64 euclidean_norm.asm</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(NasmExe)" -f win64 euclidean_norm.asm</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">euclidean_norm.obj</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">nasm -f win64 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(NasmExe)" -f win64 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename).obj</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="euclidean_norm_xmm.asm">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">c:\nasm\nasm -f win64 euclidean_norm_xmm.asm</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(NasmExe)" -f win64 euclidean_norm_xmm.asm</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">euclidean_norm_xmm.obj</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">nasm -f win64 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(NasmExe)" -f win64 "%(FullPath)" -o "$(IntDir)%(Filename).obj"</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename).obj</Outputs>
     </CustomBuild>
   </ItemGroup>
