@@ -7,7 +7,7 @@
 
 This report presents the implementation and evaluation of a kernel that computes the Euclidean norm of a vector. Given a vector A of n double-precision floating-point values, the kernel computes Z = √(Σ A[i]²) for i = 0, 1, …, n − 1 and stores the result in a double-precision scalar variable Z. The kernel was implemented in four versions, wherein each version was verified for correctness against the C version, and all four were timed across three vector sizes in both the Debug and Release configurations of Visual Studio.
 
-In the Release configuration, the SIMD YMM kernel was 2.26 to 4.07 times faster than the optimized C kernel. It reached the theoretical speedup of four only at the smallest vector size. At the larger sizes, the speedup fell to about 2.3, a result that the analysis in Section 6 attributes to the memory bandwidth limit reached by the YMM kernel.
+In the Release configuration, the SIMD YMM kernel was roughly 2.3 to 4 times faster than the optimized C kernel. It came close to the theoretical speedup of four only at the smallest vector size, while at the larger sizes the speedup was closer to 2.3. Section 6 discusses possible explanations, the most likely being the memory bandwidth of the test machine.
 
 ### 1.2 Kernel Implementations
 
@@ -34,16 +34,16 @@ Each kernel was executed 30 times for each vector size, and the average executio
 
 For the boundary test and the timed runs, each vector was initialized as A[i] = (i mod 100) + 1, so that its values run from 1 to 100 and then repeat. The standalone C correctness test uses A[i] = i + 1 with n = 1000. Both initializations have closed-form expected results, which are described in Section 4.
 
-The program was built for the x64 platform in both the Debug and Release configurations of Visual Studio. The assembly kernels were assembled with NASM through a custom build step. The test machine specifications are as follows: AMD Ryzen 5 3600 (6 cores, 32 MB L3 cache), 16 GB DDR4-2666 RAM in dual-channel configuration, and Windows 11.
+The program was built for the x64 platform in both the Debug and Release configurations of Visual Studio. The assembly kernels were assembled with NASM through a custom build step. The test machine specifications are as follows: AMD Ryzen 5 3600, 16 GB DDR4-2666 RAM, and Windows 11.
 
 ## 2. Program Output and Execution Time
 
 The program was executed once in each build configuration. Each execution prints the build type, the result of the C correctness test, the result of the boundary test, and a timing table for each vector size. Each timing table lists the average execution time of every kernel, its result, and its speedup relative to the C kernel. Figures 1 and 2 show the complete output of the Debug and Release builds, respectively.
 
-![Insert screenshot: program output, Debug build]()  
+![Program output, Debug build](images/fig1-debug-output.png)  
 *Figure 1. Program output, Debug build*
 
-![Insert screenshot: program output, Release build]()  
+![Program output, Release build](images/fig2-release-output.png)  
 *Figure 2. Program output, Release build*
 
 ## 3. Comparative Execution Time
@@ -84,28 +84,28 @@ Z = √( ⌊n / 100⌋ × 338,350 + r(r + 1)(2r + 1) / 6 ),   where r = n mod 10
 
 The C kernel matched this expected value at every vector size, as shown in Figure 3.
 
-![Insert screenshot: C correctness check]()  
+![C correctness check](images/fig3-c-correctness.png)  
 *Figure 3. C correctness check*
 
 ### 4.2 x86-64 Kernel
 
 The result of the x86-64 kernel was compared with the result of the C kernel at every vector size, and the program reported the output as correct in all cases (Figure 4). Because this kernel adds the elements in the same order as the C kernel, its results are expected to be identical to those of the C kernel.
 
-![Insert screenshot: x86-64 correctness check]()  
+![x86-64 correctness check](images/fig4-x86-64-correctness.png)  
 *Figure 4. x86-64 correctness check*
 
 ### 4.3 SIMD XMM Kernel
 
 The result of the SIMD XMM kernel was compared with the result of the C kernel at every vector size, and the program reported the output as correct in all cases (Figure 5).
 
-![Insert screenshot: SIMD XMM correctness check]()  
+![SIMD XMM correctness check](images/fig5-xmm-correctness.png)  
 *Figure 5. SIMD XMM correctness check*
 
 ### 4.4 SIMD YMM Kernel
 
 The result of the SIMD YMM kernel was compared with the result of the C kernel at every vector size, and the program reported the output as correct in all cases (Figure 6).
 
-![Insert screenshot: SIMD YMM correctness check]()  
+![SIMD YMM correctness check](images/fig6-ymm-correctness.png)  
 *Figure 6. SIMD YMM correctness check*
 
 ### 4.5 Floating-Point Tolerance
@@ -134,7 +134,7 @@ To test this behavior, the kernels were run on vectors of length 1001, 1002, and
 
 If a kernel failed to process the leftover elements, its result would be smaller than the expected value, and the comparison against the C kernel would fail. Both SIMD kernels matched the C kernel and the expected value at all three lengths (Figure 7).
 
-![Insert screenshot: boundary check for SIMD XMM and SIMD YMM]()  
+![Boundary check for SIMD XMM and SIMD YMM](images/fig7-boundary-check.png)  
 *Figure 7. Boundary check for SIMD XMM and SIMD YMM*
 
 ## 6. Performance Analysis
@@ -145,11 +145,11 @@ In the Release configuration, the kernels rank from fastest to slowest as YMM, X
 
 ### 6.2 Comparison with Optimized C
 
-The SIMD YMM kernel was 2.26 to 4.07 times faster than the optimized C kernel. In the Release configuration, the C kernel ran at roughly the same speed as the hand-written scalar kernel, which indicates that the compiler did not vectorize the loop. By default, Visual Studio preserves the order of floating-point operations as written in the source code. Vectorizing this loop would change the order of the additions and potentially the final digits of the result, as discussed in Section 4.5, so the compiler retains the scalar loop.
+The SIMD YMM kernel was roughly 2.3 to 4 times faster than the optimized C kernel. In the Release configuration, the C kernel ran at roughly the same speed as the hand-written scalar kernel, which suggests that the compiler did not vectorize the loop. A likely reason is that, by default, Visual Studio preserves the order of floating-point operations as written in the source code, and vectorizing this loop would change the order of the additions and potentially the final digits of the result, as discussed in Section 4.5.
 
 ### 6.3 Deviation from Theoretical Speedup
 
-Since the XMM and YMM kernels process two and four elements per instruction, their theoretical speedups over the scalar kernels are two and four, respectively. The measured speedups reach these values at the smallest vector size but are lower at the larger sizes. To identify the limiting factor, the Release execution times were converted into data throughput, defined as the number of bytes read divided by the execution time (Table 4).
+Since the XMM and YMM kernels process two and four elements per instruction, their theoretical speedups over the scalar kernels are two and four, respectively. To compare the kernels further, the Release execution times were converted into throughput, the amount of data read per second (Table 4).
 
 | Size | Bytes Read | C | x86-64 | XMM | YMM |
 |---|---|---|---|---|---|
@@ -159,15 +159,17 @@ Since the XMM and YMM kernels process two and four elements per instruction, the
 
 *Table 4. Data throughput of each kernel in the Release configuration*
 
-If all four kernels were limited only by memory bandwidth, they would read data at the same rate. Instead, the YMM kernel reads data more than twice as fast as the scalar kernels from the same memory, which shows that the scalar kernels are not limited by memory.
+At 2^20, the SIMD kernels came close to their theoretical speedups. At the two larger sizes, however, the XMM and YMM kernels were only about 1.6 and 2.3 times faster than the x86-64 kernel.
 
-The scalar kernels are instead limited by their chain of dependent additions. Each addition to the running sum must wait for the previous addition to complete, which takes several clock cycles. During each such interval, the scalar kernels add one element, the XMM kernel adds two, and the YMM kernel adds four, so the ideal speed ratio is 1 : 2 : 4. At 2^20, the measured ratio relative to the x86-64 kernel is approximately 1 : 2.2 : 4.2, matching the ideal. At the two larger sizes, it drops to approximately 1 : 1.6 : 2.3. The SIMD kernels therefore reach their ideal speedups when the data is supplied quickly enough, but fall short of them at the larger sizes.
+The scalar kernels read data at roughly the same rate at every size, and well below the rate of the SIMD kernels. This suggests that they are limited by how quickly they can perform the additions rather than by memory, since each addition to the running sum must wait for the previous one to finish.
 
 ### 6.4 Memory Bandwidth Limitation
 
-The throughput of the YMM kernel levels off at approximately 21 to 22 GB/s at the two larger vector sizes. This ceiling is most likely the practical memory bandwidth available to a single core, which means that further widening the arithmetic would yield little additional speedup. The test machine’s dual-channel DDR4-2666 memory has a theoretical peak bandwidth of 42.7 GB/s, but a single core typically achieves only around half of this peak, which is consistent with the observed ceiling. At 2^20, by contrast, the YMM kernel reaches 38.5 GB/s, taking 0.21 ns per element compared with 0.36 to 0.38 ns at the larger sizes. This is because the 8 MiB vector fits in the processor’s 32 MB L3 cache, which supplies data faster than main memory, while the 512 MiB and 4 GiB vectors must be read from main memory.
+At the two larger sizes, the throughput of the YMM kernel levels off at roughly 21 to 22 GB/s. One possible explanation is that, at these sizes, the processor can perform the calculations faster than the data can be read from memory, so making the arithmetic wider gives little additional speedup.
 
-The kernel performs only two floating-point operations, one multiplication and one addition, for every 8 bytes it reads. Without SIMD, the latency of the dependent additions is the bottleneck. With the YMM kernel, the arithmetic becomes fast enough that memory bandwidth becomes the limiting factor. The vectorized Euclidean norm is therefore memory-bound at large vector sizes, while the scalar versions are limited by computation.
+At 2^20, the throughput of the YMM kernel was nearly twice as high. A possible reason is that the smaller vector can be kept in the processor's cache, a small but fast memory inside the processor, between runs, while the larger vectors cannot. These explanations were not tested directly, and confirming them would require further experiments.
+
+Overall, the results suggest that without SIMD, the speed of the calculation is the main limit, while with the YMM kernel, the speed of reading data from memory likely becomes the main limit at large vector sizes.
 
 ## 7. Discussion
 
@@ -177,7 +179,7 @@ Development initially began on macOS, but code written there could not be carrie
 
 A vector of 2^30 doubles requires 8 GiB, which exceeded the 5.4 to 6.0 GiB of available memory. Windows may still satisfy such an allocation by paging memory to disk, which would severely distort the timing results. The program therefore checks the free physical memory before allocating each vector and reduces the size to 2^29, and then 2^28, if the vector does not fit.
 
-Finally, an exact comparison of floating-point results proved unreliable for the SIMD kernels, because they add the elements in a different order. This was resolved by comparing each result with the C result using a relative tolerance of 10^-9, as described in Section 4.5. [Add any problems encountered while implementing the assembly kernels.]
+Finally, an exact comparison of floating-point results proved unreliable for the SIMD kernels, because they add the elements in a different order. This was resolved by comparing each result with the C result using a relative tolerance of 10^-9, as described in Section 4.5.
 
 ### 7.2 Methodology
 
@@ -191,14 +193,14 @@ Fourth, the program determines the largest feasible vector size from the free ph
 
 ### 7.3 Key Insights
 
-The most significant finding of this project is that doubling the register width does not always double performance. At the two larger vector sizes, the YMM kernel was only about 1.4 times faster than the XMM kernel, compared with about 1.9 times at 2^20, because once the data no longer fits in cache, the processor spends most of its time waiting for data from memory rather than performing arithmetic.
+The most significant observation in this project is that doubling the register width did not always double performance. At the two larger vector sizes, the YMM kernel was only about 1.4 times faster than the XMM kernel, compared with nearly 2 times at 2^20. A likely explanation is that at larger sizes the processor spends much of its time waiting for data from memory rather than performing arithmetic.
 
-A second insight is that floating-point rounding explains two separate observations. The same reordering of additions that requires a tolerance in the correctness check is also the reason the compiler does not vectorize the C kernel on its own. Hand-written SIMD code effectively accepts a small difference in rounding that the compiler, by default, does not.
+A second insight is that floating-point rounding appears to explain two separate observations. The same reordering of additions that requires a tolerance in the correctness check is likely also the reason the compiler does not vectorize the C kernel on its own. Hand-written SIMD code effectively accepts a small difference in rounding that the compiler, by default, does not.
 
-A third insight is that Debug measurements overstate the benefit of SIMD. The assembly kernels run at similar speeds in both configurations, while the C kernel becomes approximately 3.3 to 3.5 times faster in Release. A comparison based only on the Debug build would suggest a speedup of up to 11.07 times for the YMM kernel, whereas the speedup over optimized C is 2.26 to 4.07 times.
+A third insight is that Debug measurements overstate the benefit of SIMD. The assembly kernels run at similar speeds in both configurations, while the C kernel becomes roughly 3.3 to 3.5 times faster in Release. A comparison based only on the Debug build would suggest a speedup of over 11 times for the YMM kernel, whereas the speedup over optimized C is roughly 2.3 to 4 times.
 
 Finally, hand-written scalar assembly offered no advantage over optimized C. In the Release configuration, the x86-64 kernel and the C kernel performed comparably, which shows that the performance gains in this project come entirely from SIMD.
 
 ## 8. Conclusion
 
-The Euclidean norm kernel was successfully implemented in C, x86-64 assembly, and AVX2 assembly using XMM and YMM registers. All four kernels produced correct results at every vector size, including vector lengths that are not a multiple of the SIMD register width. In the Release configuration, the YMM kernel was the fastest, at 2.26 to 4.07 times the speed of the optimized C kernel. The speedup reaches the theoretical factor of four only when the vector fits in cache. At larger sizes, it falls to about 2.3 because the vectorized kernel is limited by the memory bandwidth of the machine. These results show that the benefit of SIMD for this kernel is ultimately bounded by how quickly data can be supplied from memory.
+The Euclidean norm kernel was successfully implemented in C, x86-64 assembly, and AVX2 assembly using XMM and YMM registers. All four kernels produced correct results at every vector size, including vector lengths that are not a multiple of the SIMD register width. In the Release configuration, the YMM kernel was the fastest, at roughly 2.3 to 4 times the speed of the optimized C kernel. The speedup came close to the theoretical factor of four only at the smallest vector size and fell to about 2.3 at larger sizes, most likely because the vectorized kernel becomes limited by the memory bandwidth of the machine. These results suggest that the benefit of SIMD for this kernel is ultimately bounded by how quickly data can be supplied from memory.
