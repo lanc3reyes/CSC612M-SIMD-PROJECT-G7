@@ -1,6 +1,0 @@
-^C:\CSC612M-SIMD-PROJECT-G7\EUCLIDEAN_NORM_YMM.ASM
-nasm -f win64 "C:\csc612m-simd-project-g7\euclidean_norm_ymm.asm" -o "csc612m-.6900b986\x64\Release\euclidean_norm_ymm.obj"
-^C:\CSC612M-SIMD-PROJECT-G7\EUCLIDEAN_NORM.ASM
-nasm -f win64 "C:\csc612m-simd-project-g7\euclidean_norm.asm" -o "csc612m-.6900b986\x64\Release\euclidean_norm.obj"
-^C:\CSC612M-SIMD-PROJECT-G7\EUCLIDEAN_NORM_XMM.ASM
-nasm -f win64 "C:\csc612m-simd-project-g7\euclidean_norm_xmm.asm" -o "csc612m-.6900b986\x64\Release\euclidean_norm_xmm.obj"
